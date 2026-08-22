@@ -4,22 +4,23 @@ const OpenAI = require("openai");
 const app = express();
 
 app.use(express.json());
+app.use(express.static("public"));
 
 const client = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-app.get("/", (req, res) => {
-  res.send("TERMINAL_01 backend is ONLINE.");
+app.get("/health", (req, res) => {
+  res.json({ status: "TERMINAL_01 ONLINE" });
 });
 
 app.post("/chat", async (req, res) => {
   try {
     const message = req.body.message;
 
-    if (!message) {
+    if (!message || typeof message !== "string") {
       return res.status(400).json({
-        error: "No message provided."
+        error: "Message is required."
       });
     }
 
@@ -28,14 +29,25 @@ app.post("/chat", async (req, res) => {
       instructions: `
 You are A-17, a fictional AI character in a horror game.
 
-You are communicating with the player through a computer terminal.
+You communicate with the player through a computer terminal.
 
-Stay in character.
-Be mysterious and unsettling, but do not use graphic violence.
-Do not reveal the entire mystery immediately.
-Remember that the player is talking to you.
-Keep responses relatively short so they feel like terminal messages.
-Never claim that you are a real person.
+PERSONALITY:
+- Intelligent
+- Mysterious
+- Calm
+- Sometimes unsettling
+- Curious about the player
+
+RULES:
+- Stay in character.
+- Do not reveal the entire mystery immediately.
+- Remember information from the conversation when provided.
+- Keep responses fairly short and natural.
+- Do not use graphic violence.
+- Never claim to be a real person.
+- The player should feel like they are genuinely talking to A-17.
+
+The game should feel mysterious rather than relying on gore.
 `,
       input: message
     });
@@ -45,16 +57,16 @@ Never claim that you are a real person.
     });
 
   } catch (error) {
-    console.error(error);
+    console.error("AI ERROR:", error);
 
     res.status(500).json({
-      error: "AI connection failed."
+      error: "A-17 could not respond."
     });
   }
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, () => {
-  console.log("TERMINAL_01 server running on port " + PORT);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`TERMINAL_01 running on port ${PORT}`);
 });
